@@ -1,0 +1,176 @@
+/* ==========================================================================
+   modal.css - Ventana Modal Ampliada Sincronizada
+   ========================================================================== */
+
+.expanded-modal-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  transition: opacity var(--transition-fast);
+}
+
+.expanded-modal-wrapper.hidden {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.expanded-modal-wrapper.visible {
+  display: flex;
+  opacity: 1;
+}
+
+/* Caja de la Ventana */
+.modal-dialog-box {
+  width: 92vw;
+  height: 88vh;
+  background-color: var(--bg-surface);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Estado Maximizado */
+.expanded-modal-wrapper.maximized .modal-dialog-box {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  border: none;
+}
+
+/* Estado Colapsado / Minimizado */
+.expanded-modal-wrapper.collapsed {
+  pointer-events: none;
+  background-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 16px;
+}
+
+.expanded-modal-wrapper.collapsed .modal-dialog-box {
+  pointer-events: auto;
+  width: 380px;
+  height: auto;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.expanded-modal-wrapper.collapsed .modal-canvas-container,
+.expanded-modal-wrapper.collapsed .modal-footer-controls {
+  display: none !important;
+}
+
+/* Barra de Título */
+.modal-header-bar {
+  height: 48px;
+  min-height: 48px;
+  background-color: var(--bg-surface-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+}
+
+.modal-title-group h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.modal-window-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-act-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.modal-act-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.btn-close-modal:hover {
+  background-color: var(--accent-danger);
+  color: #ffffff;
+}
+
+/* Contenedor del Lienzo Sincronizado */
+.modal-canvas-container {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  background-color: #0b0f19;
+  overflow: hidden;
+}
+
+#modal-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+
+/* Pie de Controles del Modal */
+.modal-footer-controls {
+  height: 52px;
+  min-height: 52px;
+  background-color: var(--bg-surface-elevated);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.modal-playback-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-hint-sync {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}

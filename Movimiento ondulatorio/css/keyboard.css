@@ -1,0 +1,308 @@
+/* ==========================================================================
+   keyboard.css - Teclado Virtual Matemático Profesional
+   ========================================================================== */
+
+.virtual-keyboard-container {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 96%;
+  max-width: 820px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 12px 16px 16px 16px;
+}
+
+.virtual-keyboard-container.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.virtual-keyboard-container.hidden {
+  display: none;
+}
+
+/* Encabezado del Teclado */
+.vk-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 8px;
+}
+
+.vk-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.vk-tab-btn {
+  background-color: var(--bg-surface-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.vk-tab-btn:hover {
+  color: var(--text-main);
+  background-color: var(--bg-surface-hover);
+}
+
+.vk-tab-btn.active {
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.vk-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vk-target-badge {
+  font-size: 0.72rem;
+  color: #a5b4fc;
+  background-color: rgba(99, 102, 241, 0.15);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.vk-btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+}
+
+.vk-btn-icon:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================================================
+   GRID DE TECLAS
+   ========================================================================== */
+.vk-body {
+  margin-bottom: 10px;
+}
+
+.vk-grid-basic {
+  display: grid;
+  grid-template-columns: 1fr 2.5fr 1fr 1.5fr;
+  gap: 8px;
+}
+
+.vk-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vk-col-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+/* Estilos de Teclas Individuales */
+.vk-key {
+  height: 40px;
+  background-color: var(--bg-surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.vk-key:hover {
+  background-color: var(--bg-surface-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+.vk-key:active {
+  transform: translateY(1px);
+  background-color: var(--accent-primary);
+  color: #ffffff;
+}
+
+/* Tipos Específicos de Teclas */
+.vk-key-var {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  font-weight: 700;
+}
+
+.vk-key-const {
+  background-color: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+}
+
+.vk-key-op {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #38bdf8;
+  font-size: 1.1rem;
+}
+
+.vk-key-sym {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+}
+
+.vk-key-fn {
+  font-size: 0.8rem;
+  color: #c084fc;
+}
+
+/* Pestaña de Funciones */
+.vk-grid-funcs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.vk-grid-funcs .vk-key-fn {
+  height: 42px;
+}
+
+/* Pestaña de Física */
+.vk-grid-physics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.vk-key-preset {
+  height: 42px;
+  background-color: var(--bg-surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: #38bdf8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  padding: 0 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.vk-key-preset:hover {
+  background-color: var(--accent-primary);
+  color: #ffffff;
+}
+
+/* Pestaña de Pulsos */
+.vk-grid-pulses {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.vk-key-pulse {
+  background-color: var(--bg-surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  padding: 8px 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.vk-key-pulse strong {
+  display: block;
+  color: var(--accent-info);
+  margin-bottom: 2px;
+}
+
+.vk-key-pulse:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--bg-surface-hover);
+}
+
+/* ==========================================================================
+   BARRA DE ACCIONES DEL PIE DEL TECLADO
+   ========================================================================== */
+.vk-footer-actions {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+}
+
+.vk-key-util {
+  flex: 1;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.vk-key-nav {
+  max-width: 44px;
+}
+
+.vk-key-backspace {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.vk-key-backspace:hover {
+  background-color: var(--accent-danger);
+  color: #ffffff;
+}
+
+.vk-key-clear {
+  max-width: 80px;
+}
+
+.vk-key-confirm {
+  background: linear-gradient(135deg, var(--accent-primary), #4f46e5);
+  color: #ffffff;
+  border: none;
+}
+
+.vk-key-confirm:hover {
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+}

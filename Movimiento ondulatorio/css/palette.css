@@ -1,0 +1,215 @@
+/* ==========================================================================
+   palette.css - Modal de Paleta de Estilos Gráficos
+   ========================================================================== */
+
+.palette-modal-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--transition-fast);
+}
+
+.palette-modal-wrapper.hidden {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.palette-modal-wrapper.visible {
+  display: flex;
+  opacity: 1;
+}
+
+.palette-modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.palette-modal-box {
+  position: relative;
+  width: 90vw;
+  max-width: 620px;
+  max-height: 85vh;
+  background-color: var(--bg-surface);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* Encabezado */
+.palette-header {
+  height: 52px;
+  min-height: 52px;
+  background-color: var(--bg-surface-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+}
+
+.palette-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-main);
+}
+
+.palette-title h3 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Cuerpo */
+.palette-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.palette-section {
+  background-color: var(--bg-surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.palette-section h4 {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 6px;
+}
+
+/* Tarjetas de Temas */
+.theme-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.theme-card-btn {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.theme-card-btn:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--bg-surface-hover);
+  transform: translateY(-2px);
+}
+
+.theme-preview-box {
+  width: 100%;
+  height: 38px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-line {
+  width: 80%;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.theme-card-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Formularios de Personalización */
+.palette-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-group input[type="color"] {
+  width: 100%;
+  height: 32px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-elevated);
+  cursor: pointer;
+}
+
+.form-group input[type="range"] {
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.range-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.flex-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Pie */
+.palette-footer {
+  height: 52px;
+  min-height: 52px;
+  background-color: var(--bg-surface-elevated);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 18px;
+  gap: 10px;
+}

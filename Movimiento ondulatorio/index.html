@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OndaLab Pro | Superposición de Ondas</title>
+  <meta name="description" content="Simulador interactivo de movimiento ondulatorio, propagación y superposición con plano cartesiano estilo GeoGebra.">
+  <meta name="theme-color" content="#0f172a">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+  <style>
+/* ============ RESET & VARIABLES ============ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-app: #0a0e1a;
+  --bg-surface: #111827;
+  --bg-surface-2: #1e293b;
+  --bg-surface-3: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59,130,246,0.25);
+  --accent-2: #8b5cf6;
+  --border: rgba(148,163,184,0.12);
+  --border-focus: rgba(59,130,246,0.5);
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+  --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+  --font-sans: 'Inter', 'Outfit', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-display: 'Outfit', 'Inter', sans-serif;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  font-family: var(--font-sans);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============ LAYOUT ============ */
+.app-layout {
+  display: flex; flex-direction: column;
+  height: 100vh; width: 100vw;
+}
+
+.app-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; height: 52px; min-height: 52px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+
+.header-left { display: flex; align-items: center; gap: 12px; }
+.brand-badge {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; box-shadow: 0 0 20px rgba(99,102,241,0.3);
+}
+.app-title {
+  font-family: var(--font-display); font-size: 17px; font-weight: 700;
+  background: linear-gradient(90deg, #f1f5f9, #94a3b8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.app-tag {
+  font-size: 10px; font-weight: 600; padding: 2px 8px;
+  background: rgba(139,92,246,0.2); color: #a78bfa;
+  border-radius: 20px; vertical-align: middle; margin-left: 6px;
+}
+.app-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: none; transition: all var(--transition);
+  font-family: var(--font-sans);
+}
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: #fff; box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+}
+.btn-primary:hover { box-shadow: 0 4px 16px rgba(99,102,241,0.5); transform: translateY(-1px); }
+.btn-outline {
+  background: rgba(255,255,255,0.05); color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); border-color: var(--border-focus); }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+.btn-icon {
+  width: 32px; height: 32px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm); background: rgba(255,255,255,0.05);
+  color: var(--text-secondary); border: 1px solid var(--border); cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-icon:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+.btn-icon.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ============ WORKSPACE ============ */
+.workspace {
+  flex: 1; display: flex; overflow: hidden;
+  position: relative;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 380px; min-width: 320px; max-width: 500px;
+  display: flex; flex-direction: column;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.sidebar-tabs {
+  display: flex; border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+}
+.sidebar-tab {
+  flex: 1; padding: 10px; text-align: center;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  color: var(--text-muted); border: none; background: none;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition);
+  font-family: var(--font-sans);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.sidebar-tab:hover { color: var(--text-secondary); }
+.sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(59,130,246,0.05); }
+
+.sidebar-scroll { flex: 1; overflow-y: auto; padding: 14px; }
+.sidebar-scroll::-webkit-scrollbar { width: 5px; }
+.sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: var(--bg-surface-3); border-radius: 10px; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ============ WAVE CARDS ============ */
+.waves-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px;
+}
+.waves-header h3 { font-size: 14px; font-weight: 700; }
+.waves-header p { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.wave-card {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  transition: all var(--transition);
+  position: relative;
+}
+.wave-card:hover { border-color: rgba(148,163,184,0.25); }
+.wave-card.hidden-wave { opacity: 0.45; }
+
+.wave-card-top {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+}
+.wave-identity { display: flex; align-items: center; gap: 8px; }
+.color-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  box-shadow: 0 0 6px currentColor; flex-shrink: 0;
+}
+.wave-title { font-weight: 700; font-size: 13px; font-family: var(--font-mono); }
+.wave-badge {
+  font-size: 9px; padding: 2px 7px; border-radius: 10px;
+  font-weight: 600;
+}
+.badge-right { background: rgba(16,185,129,0.15); color: #10b981; }
+.badge-left { background: rgba(239,68,68,0.15); color: #ef4444; }
+.badge-static { background: rgba(148,163,184,0.15); color: #94a3b8; }
+
+.wave-actions { display: flex; gap: 4px; align-items: center; }
+.wave-actions button {
+  width: 26px; height: 26px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none; color: var(--text-muted);
+  cursor: pointer; transition: all var(--transition);
+}
+.wave-actions button:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+.wave-actions button.active { color: var(--accent); }
+.wave-actions .btn-delete:hover { color: var(--danger); }
+
+/* Equation Input */
+.eq-row { margin-bottom: 8px; }
+.eq-input-wrap {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 4px 8px;
+  transition: border-color var(--transition);
+}
+.eq-input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+.eq-prefix {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  color: var(--text-muted); white-space: nowrap;
+}
+.eq-input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text-primary); font-family: var(--font-mono);
+  font-size: 13px; padding: 4px 0;
+}
+.eq-input::placeholder { color: var(--text-muted); opacity: 0.5; }
+
+/* KaTeX Preview */
+.katex-preview {
+  font-size: 14px; padding: 6px 0;
+  color: var(--text-secondary);
+  min-height: 24px;
+}
+.katex-preview .katex { font-size: 1em; }
+.wave-error { font-size: 10px; color: var(--danger); margin-top: 2px; }
+
+/* Param Grid */
+.param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.param-box {
+  background: rgba(0,0,0,0.2); border-radius: var(--radius-sm);
+  padding: 8px;
+}
+.param-label {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; color: var(--text-muted); margin-bottom: 4px;
+  font-weight: 600;
+}
+.param-val { font-family: var(--font-mono); color: var(--text-secondary); }
+
+/* Range Slider */
+input[type="range"] {
+  -webkit-appearance: none; width: 100%; height: 4px;
+  background: var(--bg-surface-3); border-radius: 2px;
+  outline: none; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px;
+  background: var(--accent); border-radius: 50%;
+  box-shadow: 0 0 6px var(--accent-glow);
+  cursor: pointer;
+}
+
+/* Select */
+.form-select {
+  background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+  color: var(--text-primary); border-radius: 4px;
+  padding: 3px 6px; font-size: 11px; outline: none;
+  font-family: var(--font-sans); cursor: pointer;
+}
+.form-select:focus { border-color: var(--accent); }
+
+/* Color Picker */
+input[type="color"] {
+  -webkit-appearance: none; border: none;
+  width: 28px; height: 28px; border-radius: 6px;
+  cursor: pointer; padding: 0; background: none;
+}
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+input[type="color"]::-webkit-color-swatch { border-radius: 4px; border: none; }
+
+/* Resultant Card */
+.resultant-card {
+  background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.05));
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: var(--radius); padding: 14px;
+  margin-bottom: 14px;
+}
+.res-header { display: flex; justify-content: space-between; align-items: center; }
+.res-title { display: flex; align-items: center; gap: 8px; }
+.badge-sigma {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px; color: #fff;
+}
+.res-name { font-size: 13px; font-weight: 700; }
+.res-eq { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px; }
+
+/* Toggle */
+.toggle-wrap { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.toggle-label { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+.toggle {
+  position: relative; width: 34px; height: 18px;
+  background: var(--bg-surface-3); border-radius: 9px;
+  transition: background var(--transition); cursor: pointer;
+  border: none; padding: 0;
+}
+.toggle.on { background: var(--accent); }
+.toggle::after {
+  content: ''; position: absolute;
+  top: 2px; left: 2px; width: 14px; height: 14px;
+  background: #fff; border-radius: 50%;
+  transition: transform var(--transition);
+}
+.toggle.on::after { transform: translateX(16px); }
+
+/* ============ SPLITTER ============ */
+.splitter {
+  width: 5px; cursor: col-resize;
+  background: var(--border);
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+.splitter:hover, .splitter.active { background: var(--accent); }
+
+/* ============ CANVAS PANE ============ */
+.canvas-pane {
+  flex: 1; display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+}
+
+.canvas-container {
+  flex: 1; position: relative; overflow: hidden;
+}
+.canvas-container canvas {
+  display: block; width: 100%; height: 100%;
+}
+
+/* Floating Toolbar */
+.float-toolbar {
+  position: absolute; top: 12px; right: 12px;
+  display: flex; gap: 4px; padding: 4px;
+  background: rgba(15,23,42,0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  z-index: 10;
+  box-shadow: var(--shadow-lg);
+}
+.tb-btn {
+  width: 32px; height: 32px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none;
+  color: var(--text-secondary); cursor: pointer;
+  transition: all var(--transition);
+}
+.tb-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.tb-btn.active { background: var(--accent); color: #fff; }
+.tb-sep { width: 1px; background: var(--border); margin: 4px 2px; }
+
+/* Scale Badge */
+.scale-badge {
+  position: absolute; bottom: 8px; left: 12px;
+  font-size: 10px; color: var(--text-muted);
+  background: rgba(15,23,42,0.7); padding: 4px 10px;
+  border-radius: 20px; backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+
+/* ============ PLAYBACK BAR ============ */
+.playback-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 16px; height: 48px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+}
+.pb-group { display: flex; align-items: center; gap: 6px; }
+.pb-btn {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid var(--border);
+  color: var(--text-secondary); cursor: pointer;
+  transition: all var(--transition);
+}
+.pb-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.pb-btn.play-btn {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  border: none; color: #fff; width: 38px; height: 38px;
+  box-shadow: 0 2px 12px rgba(99,102,241,0.4);
+}
+.pb-btn.play-btn:hover { box-shadow: 0 4px 20px rgba(99,102,241,0.6); transform: scale(1.05); }
+
+.time-display {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--text-secondary); min-width: 90px;
+  text-align: center;
+}
+
+.time-slider {
+  flex: 1; min-width: 120px;
+}
+
+.speed-group {
+  display: flex; align-items: center; gap: 6px;
+  margin-left: auto;
+}
+.speed-label { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+/* ============ MODAL ============ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  z-index: 1000; justify-content: center; align-items: center;
+}
+.modal-overlay.visible { display: flex; }
+
+.modal-box {
+  width: 90vw; height: 85vh;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  overflow: hidden;
+}
+.modal-box.maximized { width: 100vw; height: 100vh; border-radius: 0; }
+
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 20px; border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+}
+.modal-title {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 700;
+}
+.modal-actions { display: flex; gap: 4px; }
+.modal-act-btn {
+  width: 28px; height: 28px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none;
+  color: var(--text-muted); cursor: pointer;
+  transition: all var(--transition);
+}
+.modal-act-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.modal-act-btn.close-btn:hover { background: var(--danger); color: #fff; }
+
+.modal-canvas-wrap { flex: 1; position: relative; overflow: hidden; }
+.modal-canvas-wrap canvas { display: block; width: 100%; height: 100%; }
+
+.modal-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 20px; border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+}
+.modal-footer .sync-hint { font-size: 11px; color: var(--text-muted); }
+
+/* ============ PALETTE MODAL ============ */
+.palette-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(3px);
+  z-index: 1001; justify-content: center; align-items: center;
+}
+.palette-overlay.visible { display: flex; }
+
+.palette-box {
+  width: 480px; max-height: 80vh;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.palette-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+}
+.palette-header h3 { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.palette-body { padding: 16px 20px; overflow-y: auto; max-height: calc(80vh - 60px); }
+
+.palette-section { margin-bottom: 16px; }
+.palette-section h4 {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text-muted); margin-bottom: 10px; font-weight: 700;
+}
+.palette-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.palette-row label { font-size: 12px; color: var(--text-secondary); min-width: 120px; }
+.palette-row input[type="range"] { flex: 1; }
+
+/* Theme Cards */
+.theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.theme-card {
+  padding: 10px; border-radius: var(--radius);
+  border: 2px solid var(--border);
+  cursor: pointer; transition: all var(--transition);
+  text-align: center;
+}
+.theme-card:hover { border-color: var(--accent); }
+.theme-card.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+.theme-swatch {
+  height: 24px; border-radius: 4px; margin-bottom: 6px;
+  display: flex; gap: 2px;
+}
+.theme-swatch span { flex: 1; border-radius: 2px; }
+.theme-name { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+
+/* ============ DIDACTIC ============ */
+.preset-card {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px; margin-bottom: 10px;
+  cursor: pointer; transition: all var(--transition);
+}
+.preset-card:hover { border-color: var(--accent); background: rgba(59,130,246,0.05); }
+.preset-card.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+.preset-category { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
+.preset-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.preset-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+.preset-questions { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.preset-q { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; padding-left: 12px; border-left: 2px solid var(--accent); }
+.hint-toggle {
+  font-size: 10px; color: var(--accent); cursor: pointer;
+  background: none; border: none; font-weight: 600;
+  margin-top: 2px; font-family: var(--font-sans);
+}
+.hint-text { font-size: 10px; color: var(--warning); margin-top: 2px; display: none; }
+.hint-text.show { display: block; }
+
+/* ============ VIRTUAL KEYBOARD ============ */
+.vk-container {
+  display: none; position: fixed; bottom: 56px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 10px;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.4);
+  z-index: 999; max-width: 600px; width: 95%;
+  backdrop-filter: blur(12px);
+}
+.vk-container.visible { display: block; }
+.vk-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+.vk-tab {
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  background: transparent; border: none;
+  color: var(--text-muted); transition: all var(--transition);
+  font-family: var(--font-sans);
+}
+.vk-tab:hover { color: var(--text-secondary); }
+.vk-tab.active { background: var(--accent); color: #fff; }
+.vk-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 4px;
+}
+.vk-key {
+  padding: 8px 4px; border-radius: 6px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  color: var(--text-primary); font-size: 13px;
+  font-family: var(--font-mono); cursor: pointer;
+  transition: all var(--transition); text-align: center;
+}
+.vk-key:hover { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(-1px); }
+.vk-key.wide { grid-column: span 2; font-size: 11px; }
+.vk-close-row { display: flex; justify-content: flex-end; margin-top: 6px; }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+  .workspace { flex-direction: column; }
+  .sidebar { width: 100%; max-width: 100%; height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
+  .splitter { display: none; }
+  .canvas-pane { height: 60vh; }
+  .palette-box { width: 95vw; }
+}
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-surface-3); border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand-badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M2 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0"></path>
+            <path d="M2 17c2-3 4-3 6 0s4 3 6 0 4-3 6 0"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="app-title">OndaLab Pro <span class="app-tag">Física Ondulatoria</span></div>
+          <div class="app-subtitle">Movimiento, Propagación y Principio de Superposición</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-outline" id="btn-palette" title="Paleta de Estilos">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+          </svg>
+          Estilos
+        </button>
+        <button class="btn btn-primary" id="btn-modal" title="Ventana Ampliada">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <polyline points="9 21 3 21 3 15"></polyline>
+            <line x1="21" y1="3" x2="14" y2="10"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+          Ampliada
+        </button>
+      </div>
+    </header>
+
+    <!-- WORKSPACE -->
+    <div class="workspace" id="workspace">
+      <!-- SIDEBAR -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-tabs">
+          <button class="sidebar-tab active" data-tab="editor">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            Editor de Ondas
+          </button>
+          <button class="sidebar-tab" data-tab="didactic">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            Situaciones
+          </button>
+        </div>
+        <div class="sidebar-scroll">
+          <div class="tab-content active" id="tab-editor"></div>
+          <div class="tab-content" id="tab-didactic"></div>
+        </div>
+      </aside>
+
+      <!-- SPLITTER -->
+      <div class="splitter" id="splitter"></div>
+
+      <!-- CANVAS PANE -->
+      <section class="canvas-pane">
+        <div class="canvas-container" id="canvas-container">
+          <canvas id="main-canvas"></canvas>
+
+          <!-- Floating Toolbar -->
+          <div class="float-toolbar">
+            <button class="tb-btn" id="tb-zoom-in" title="Acercar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg></button>
+            <button class="tb-btn" id="tb-zoom-out" title="Alejar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg></button>
+            <button class="tb-btn" id="tb-reset" title="Restablecer vista"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></button>
+            <div class="tb-sep"></div>
+            <button class="tb-btn" id="tb-inspector" title="Inspector de Punto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line></svg></button>
+            <button class="tb-btn" id="tb-vectors" title="Vectores de propagación"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
+          </div>
+
+          <div class="scale-badge">Escala visual · No altera ecuaciones</div>
+        </div>
+
+        <!-- Playback Bar -->
+        <div class="playback-bar">
+          <div class="pb-group">
+            <button class="pb-btn" id="btn-step-back" title="Paso atrás">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
+            </button>
+            <button class="pb-btn play-btn" id="btn-play" title="Reproducir/Pausar (Espacio)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </button>
+            <button class="pb-btn" id="btn-step-fwd" title="Paso adelante">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
+            </button>
+            <button class="pb-btn" id="btn-reset-t" title="Reiniciar t=0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+            </button>
+          </div>
+          <span class="time-display" id="time-display">t = 0.00 s</span>
+          <input type="range" class="time-slider" id="time-slider" min="0" max="20" step="0.02" value="0">
+          <div class="speed-group">
+            <span class="speed-label">Rapidez:</span>
+            <select class="form-select" id="speed-select">
+              <option value="0.25">0.25×</option>
+              <option value="0.5">0.5×</option>
+              <option value="1" selected>1.0×</option>
+              <option value="2">2.0×</option>
+              <option value="4">4.0×</option>
+            </select>
+            <button class="btn-icon" id="btn-keyboard" title="Teclado Virtual (K)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><line x1="6" y1="8" x2="6.01" y2="8"></line><line x1="10" y1="8" x2="10.01" y2="8"></line><line x1="14" y1="8" x2="14.01" y2="8"></line><line x1="18" y1="8" x2="18.01" y2="8"></line><line x1="6" y1="12" x2="6.01" y2="12"></line><line x1="10" y1="12" x2="10.01" y2="12"></line><line x1="14" y1="12" x2="14.01" y2="12"></line><line x1="18" y1="12" x2="18.01" y2="12"></line><line x1="7" y1="16" x2="17" y2="16"></line></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- EXPANDED MODAL -->
+  <div class="modal-overlay" id="expanded-modal">
+    <div class="modal-box" id="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          Visualización Ampliada
+        </div>
+        <div class="modal-actions">
+          <button class="modal-act-btn" id="modal-collapse" title="Colapsar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+          <button class="modal-act-btn" id="modal-maximize" title="Maximizar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg></button>
+          <button class="modal-act-btn" id="modal-fullscreen" title="Pantalla Completa"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg></button>
+          <button class="modal-act-btn close-btn" id="modal-close" title="Cerrar (Esc)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+      </div>
+      <div class="modal-canvas-wrap"><canvas id="modal-canvas"></canvas></div>
+      <div class="modal-footer">
+        <div class="pb-group">
+          <button class="pb-btn play-btn" id="modal-play"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></button>
+          <button class="btn btn-outline btn-sm" id="modal-zoom-in">+</button>
+          <button class="btn btn-outline btn-sm" id="modal-zoom-out">−</button>
+          <button class="btn btn-outline btn-sm" id="modal-reset-view">Restablecer</button>
+        </div>
+        <span class="sync-hint">🔗 Sincronizado en tiempo real</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PALETTE MODAL -->
+  <div class="palette-overlay" id="palette-overlay">
+    <div class="palette-box">
+      <div class="palette-header">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>
+          Paleta de Estilos
+        </h3>
+        <button class="modal-act-btn close-btn" id="palette-close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+      </div>
+      <div class="palette-body" id="palette-body"></div>
+    </div>
+  </div>
+
+  <!-- VIRTUAL KEYBOARD -->
+  <div class="vk-container" id="vk-container"></div>
+
+<script>
+// ===========================
+// INLINE APPLICATION CODE
+// ===========================
+(function() {
+'use strict';
+
+// ========== THEMES ==========
+const THEMES = {
+  geogebra: {
+    name: 'GeoGebra Clásico', bg: '#ffffff',
+    axisColor: '#334155', majorGrid: '#cbd5e1', minorGrid: '#f1f5f9',
+    text: '#1e293b', resultant: '#8b5cf6', vector: '#f59e0b', crosshair: '#475569'
+  },
+  darkPro: {
+    name: 'Modo Oscuro Pro', bg: '#0f172a',
+    axisColor: '#94a3b8', majorGrid: '#334155', minorGrid: '#1e293b',
+    text: '#f8fafc', resultant: '#a78bfa', vector: '#fbbf24', crosshair: '#cbd5e1'
+  },
+  milimetrado: {
+    name: 'Papel Milimetrado', bg: '#f8fafd',
+    axisColor: '#1e3a8a', majorGrid: '#93c5fd', minorGrid: '#dbeafe',
+    text: '#0f172a', resultant: '#dc2626', vector: '#ea580c', crosshair: '#2563eb'
+  },
+  cyberpunk: {
+    name: 'Laboratorio Neón', bg: '#05050d',
+    axisColor: '#06b6d4', majorGrid: '#1e1b4b', minorGrid: '#0f0f23',
+    text: '#e0e7ff', resultant: '#f43f5e', vector: '#10b981', crosshair: '#38bdf8'
+  }
+};
+
+const COLORS = ['#3b82f6','#ef4444','#10b981','#f59e0b','#06b6d4','#8b5cf6','#ec4899','#6366f1'];
+
+// ========== MATH ENGINE ==========
+const MathEngine = {
+  normalize(raw) {
+    if (!raw || typeof raw !== 'string') return '0';
+    let e = raw.trim().toLowerCase();
+    e = e.replace(/\bsen\b/g,'sin').replace(/\btg\b/g,'tan')
+         .replace(/\barcsen\b/g,'asin').replace(/\barctg\b/g,'atan').replace(/\bln\b/g,'log');
+    // Implicit multiplication
+    e = e.replace(/(\d)\s*([a-zA-Z_(])/g,'$1*$2');
+    e = e.replace(/\)\s*\(/g,')*(').replace(/\)\s*(\d)/g,')*$1').replace(/\)\s*([a-zA-Z_])/g,')*$1');
+    e = e.replace(/\b([xtv])\s*\(/g,'$1*(');
+    // Constants
+    e = e.replace(/\bpi\b/g,'Math.PI');
+    e = e.replace(/\be\b(?![a-z0-9_])/g,'Math.E');
+    // Functions
+    ['sin','cos','tan','asin','acos','atan','sinh','cosh','tanh','exp','log','log10','sqrt','cbrt','abs','floor','ceil','round','sign'].forEach(f => {
+      e = e.replace(new RegExp(`(?<!Math\\.)${f}\\(`,'g'),`Math.${f}(`);
+    });
+    // Powers
+    e = MathEngine.replacePowers(e);
+    e = e.replace(/Math\.\*/g,'Math.');
+    return e;
+  },
+
+  replacePowers(expr) {
+    let idx = expr.indexOf('^'), guard = 0;
+    while (idx !== -1 && guard++ < 50) {
+      let ls = idx - 1;
+      while (ls >= 0 && /\s/.test(expr[ls])) ls--;
+      let left, leftStart;
+      if (expr[ls] === ')') {
+        let d=1, i=ls-1;
+        while(i>=0&&d>0){if(expr[i]===')') d++; else if(expr[i]==='(') d--; i--;}
+        left=expr.substring(i+1,ls+1); leftStart=i+1;
+      } else {
+        let i=ls;
+        while(i>=0&&/[a-zA-Z0-9_.]/.test(expr[i])) i--;
+        left=expr.substring(i+1,ls+1); leftStart=i+1;
+      }
+      let rs=idx+1;
+      while(rs<expr.length&&/\s/.test(expr[rs])) rs++;
+      let right, rightEnd;
+      if(expr[rs]==='('){
+        let d=1,i=rs+1;
+        while(i<expr.length&&d>0){if(expr[i]==='(')d++;else if(expr[i]===')')d--;i++;}
+        right=expr.substring(rs,i); rightEnd=i;
+      } else {
+        let i=rs;
+        while(i<expr.length&&/[a-zA-Z0-9_.\-]/.test(expr[i])) i++;
+        right=expr.substring(rs,i); rightEnd=i;
+      }
+      if (!left||!right) { expr=expr.replace('^','**'); break; }
+      expr=expr.substring(0,leftStart)+`Math.pow(${left},${right})`+expr.substring(rightEnd);
+      idx=expr.indexOf('^');
+    }
+    return expr;
+  },
+
+  compile(raw) {
+    if (!raw || !raw.trim()) return { fn:()=>0, valid:false, error:'Vacía', latex:'0' };
+    try {
+      const n = this.normalize(raw);
+      if (/([;`]|window|document|eval|Function|fetch|alert|XMLHttpRequest|import|export)/i.test(n))
+        throw new Error('Expresión no permitida');
+      const fn = new Function('x','t','v',`"use strict";try{const val=${n};return(typeof val==='number'&&!isNaN(val))?val:NaN;}catch(e){return NaN;}`);
+      const test = fn(1,0,1);
+      if (isNaN(test)) {
+        const t2=fn(0.5,0.5,2), t3=fn(-1,1,1);
+        if (isNaN(t2)&&isNaN(t3)) return{fn:()=>0,valid:false,error:'Valores indefinidos',latex:this.toLatex(raw)};
+      }
+      return { fn, valid:true, error:null, latex:this.toLatex(raw) };
+    } catch(err) {
+      return { fn:()=>0, valid:false, error:err.message, latex:this.toLatex(raw) };
+    }
+  },
+
+  toLatex(raw) {
+    if (!raw) return '0';
+    let s = raw.trim();
+    s=s.replace(/\bsen\b/g,'\\sin').replace(/\bsin\b/g,'\\sin').replace(/\bcos\b/g,'\\cos')
+       .replace(/\btan\b|\btg\b/g,'\\tan').replace(/\bexp\b/g,'\\exp').replace(/\bln\b/g,'\\ln');
+    s=s.replace(/\bsqrt\(([^)]+)\)/g,'\\sqrt{$1}').replace(/\bpi\b/gi,'\\pi');
+    s=s.replace(/\*/g,' \\cdot ');
+    s=s.replace(/\^([a-zA-Z0-9_]+)/g,'^{$1}').replace(/\^\(([^)]+)\)/g,'^{$1}');
+    return s;
+  },
+
+  sampleWave(fn, v, xMin, xMax, t, numPts=1200) {
+    const pts=[], step=(xMax-xMin)/(numPts-1);
+    let prevY=null;
+    for(let i=0;i<numPts;i++){
+      const x=xMin+i*step;
+      let y=NaN;
+      try{y=fn(x,t,v);}catch(e){y=NaN;}
+      const sing=isNaN(y)||!isFinite(y)||Math.abs(y)>100;
+      let disc=false;
+      if(!sing&&prevY!==null){
+        const dy=Math.abs(y-prevY), deriv=dy/step;
+        if(deriv>150&&Math.sign(y)!==Math.sign(prevY)&&(Math.abs(y)>4||Math.abs(prevY)>4)) disc=true;
+      }
+      if(sing||disc){pts.push({x,y:NaN,brk:true});prevY=null;}
+      else{pts.push({x,y,brk:false});prevY=y;}
+    }
+    return pts;
+  },
+
+  evaluateAt(waves, x, t) {
+    let sum=0; const vals=[];
+    waves.forEach(w=>{
+      let y=0;
+      if(w.compiled&&w.compiled.valid){try{y=w.compiled.fn(x,t,w.v);}catch(e){y=0;}}
+      vals.push({id:w.id,name:w.name,color:w.color,val:isNaN(y)?0:y,visible:w.visible,inSum:w.inSum});
+      if(w.inSum&&!isNaN(y)&&isFinite(y)) sum+=y;
+    });
+    return {x,t,components:vals,resultant:sum};
+  }
+};
+
+// ========== STATE ==========
+const state = {
+  waves: [
+    { id:'w1', name:'y₁(x, t)', expr:'2 * sin(x - 2 * t)', v:2, color:'#3b82f6', lineWidth:2.5, lineDash:'solid', opacity:0.9, visible:true, inSum:true, compiled:null },
+    { id:'w2', name:'y₂(x, t)', expr:'1.8 * sin(x + 2 * t)', v:-2, color:'#ef4444', lineWidth:2.5, lineDash:'dashed', opacity:0.9, visible:true, inSum:true, compiled:null },
+    { id:'w3', name:'y₃(x, t)', expr:'1.2 * cos(2 * (x - t))', v:1, color:'#10b981', lineWidth:2.5, lineDash:'dotted', opacity:0.9, visible:true, inSum:true, compiled:null }
+  ],
+  resultant: { visible:true, color:'#8b5cf6', lineWidth:3.5, opacity:1, fillArea:true, fillOpacity:0.12 },
+  time: { current:0, playing:false, speed:1, dir:1, max:20 },
+  viewport: { xMin:-12, xMax:12, yMin:-6, yMax:6 },
+  themeKey: 'darkPro',
+  theme: null,
+  styles: { axisWidth:2, majorGridW:1.2, minorGridW:0.6, showMinor:true, showMajor:true, tickFont:12, labelFont:14, showArrows:true, showVectors:true, vectorOpacity:0.85 },
+  inspector: { active:false, x:0 },
+  modal: { open:false, maximized:false }
+};
+state.theme = {...THEMES.darkPro};
+
+// Event Bus
+const listeners = {};
+function on(evt, cb) { (listeners[evt]||(listeners[evt]=[])).push(cb); }
+function emit(evt, data) { (listeners[evt]||[]).forEach(cb=>{ try{cb(data);}catch(e){console.error(e);} }); }
+
+// Compile initial
+state.waves.forEach(w=>{ w.compiled = MathEngine.compile(w.expr); });
+
+function toSub(n) {
+  const s='₀₁₂₃₄₅₆₇₈₉';
+  return String(n).split('').map(d=>s[parseInt(d)]||d).join('');
+}
+
+function addWave(data={}) {
+  const idx=state.waves.length+1;
+  const w={
+    id:'w_'+Date.now().toString(36)+Math.random().toString(36).substr(2,3),
+    name:`y${toSub(idx)}(x, t)`,
+    expr: data.expr||'sin(x - 2*t)', v: data.v!==undefined?data.v:2,
+    color: data.color||COLORS[(idx-1)%COLORS.length],
+    lineWidth:2.5, lineDash: idx%2===0?'dashed':'solid',
+    opacity:0.9, visible:true, inSum:true, compiled:null
+  };
+  w.compiled=MathEngine.compile(w.expr);
+  state.waves.push(w);
+  emit('wavesChanged');
+  return w;
+}
+
+function removeWave(id) {
+  const idx=state.waves.findIndex(w=>w.id===id);
+  if(idx!==-1&&state.waves.length>1){
+    state.waves.splice(idx,1);
+    state.waves.forEach((w,i)=>{w.name=`y${toSub(i+1)}(x, t)`;});
+    emit('wavesChanged');
+  }
+}
+
+function updateWave(id, changes) {
+  const w=state.waves.find(w=>w.id===id);
+  if(!w) return;
+  if(changes.expr!==undefined&&changes.expr!==w.expr){w.expr=changes.expr;w.compiled=MathEngine.compile(w.expr);}
+  ['v','color','lineWidth','lineDash','opacity','visible','inSum','name'].forEach(k=>{if(changes[k]!==undefined)w[k]=changes[k];});
+  emit('wavesChanged');
+}
+
+// Viewport
+function setViewport(xMin,xMax,yMin,yMax){Object.assign(state.viewport,{xMin,xMax,yMin,yMax});emit('viewportChanged');}
+function resetViewport(){setViewport(-12,12,-6,6);}
+function zoom(factor,cx=0,cy=0){
+  const v=state.viewport;
+  setViewport(cx+(v.xMin-cx)*factor, cx+(v.xMax-cx)*factor, cy+(v.yMin-cy)*factor, cy+(v.yMax-cy)*factor);
+}
+function pan(dx,dy){const v=state.viewport;setViewport(v.xMin+dx,v.xMax+dx,v.yMin+dy,v.yMax+dy);}
+
+function setTheme(key){
+  if(THEMES[key]){state.themeKey=key;state.theme={...THEMES[key]};state.resultant.color=THEMES[key].resultant;emit('themeChanged');}
+}
+
+// ========== CARTESIAN PLANE ==========
+class CartesianPlane {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.dpr = 1; this.w = 0; this.h = 0;
+    this.dragging = false; this.dragMode = 'pan';
+    this.dragStart = {x:0,y:0}; this.dragVP = null;
+    this.hoverWorld = null;
+    this.bindEvents();
+  }
+
+  resize() {
+    const r = this.canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio||1;
+    const w=Math.round(r.width), h=Math.round(r.height);
+    if(!w||!h) return;
+    this.canvas.width = w*dpr; this.canvas.height = h*dpr;
+    this.canvas.style.width = w+'px'; this.canvas.style.height = h+'px';
+    this.dpr=dpr; this.w=w; this.h=h;
+  }
+
+  worldToScreen(wx,wy){
+    const v=state.viewport;
+    return{x:((wx-v.xMin)/(v.xMax-v.xMin))*this.w, y:((v.yMax-wy)/(v.yMax-v.yMin))*this.h};
+  }
+  screenToWorld(sx,sy){
+    const v=state.viewport;
+    return{x:v.xMin+(sx/this.w)*(v.xMax-v.xMin), y:v.yMax-(sy/this.h)*(v.yMax-v.yMin)};
+  }
+
+  gridStep(range, px, target=80) {
+    const raw = target*(range/px);
+    const exp = Math.floor(Math.log10(raw));
+    const frac = raw/Math.pow(10,exp);
+    let nice = frac>=7.5?10:frac>=3.5?5:frac>=1.5?2:1;
+    const major = nice*Math.pow(10,exp);
+    return { major, minor: major/5 };
+  }
+
+  render() {
+    this.resize();
+    if(!this.w||!this.h) return;
+    const ctx=this.ctx, vp=state.viewport, th=state.theme, st=state.styles;
+    ctx.save();
+    ctx.scale(this.dpr, this.dpr);
+
+    // Background
+    ctx.fillStyle = th.bg;
+    ctx.fillRect(0,0,this.w,this.h);
+
+    // Grids
+    this.drawGrids(ctx,vp,th,st);
+    // Axes
+    this.drawAxes(ctx,vp,th,st);
+    // Waves
+    this.drawWaves(ctx,vp);
+    // Resultant
+    if(state.resultant.visible) this.drawResultant(ctx,vp);
+    // Inspector
+    if(state.inspector.active && this.hoverWorld) this.drawInspector(ctx,vp);
+
+    ctx.restore();
+  }
+
+  drawGrids(ctx,vp,th,st) {
+    const xr=vp.xMax-vp.xMin, yr=vp.yMax-vp.yMin;
+    const xg=this.gridStep(xr,this.w,90), yg=this.gridStep(yr,this.h,90);
+    if(st.showMinor){
+      ctx.beginPath(); ctx.strokeStyle=th.minorGrid; ctx.lineWidth=st.minorGridW;
+      let sx=Math.floor(vp.xMin/xg.minor)*xg.minor;
+      for(let x=sx;x<=vp.xMax;x+=xg.minor){const s=((x-vp.xMin)/xr)*this.w;ctx.moveTo(s,0);ctx.lineTo(s,this.h);}
+      let sy=Math.floor(vp.yMin/yg.minor)*yg.minor;
+      for(let y=sy;y<=vp.yMax;y+=yg.minor){const s=((vp.yMax-y)/yr)*this.h;ctx.moveTo(0,s);ctx.lineTo(this.w,s);}
+      ctx.stroke();
+    }
+    if(st.showMajor){
+      ctx.beginPath(); ctx.strokeStyle=th.majorGrid; ctx.lineWidth=st.majorGridW;
+      let sx=Math.floor(vp.xMin/xg.major)*xg.major;
+      for(let x=sx;x<=vp.xMax;x+=xg.major){const s=((x-vp.xMin)/xr)*this.w;ctx.moveTo(s,0);ctx.lineTo(s,this.h);}
+      let sy=Math.floor(vp.yMin/yg.major)*yg.major;
+      for(let y=sy;y<=vp.yMax;y+=yg.major){const s=((vp.yMax-y)/yr)*this.h;ctx.moveTo(0,s);ctx.lineTo(this.w,s);}
+      ctx.stroke();
+    }
+  }
+
+  drawAxes(ctx,vp,th,st) {
+    const xr=vp.xMax-vp.xMin, yr=vp.yMax-vp.yMin;
+    const xg=this.gridStep(xr,this.w,90), yg=this.gridStep(yr,this.h,90);
+    let oY=((vp.yMax)/yr)*this.h, oX=((-vp.xMin)/xr)*this.w;
+    const cY=Math.max(20,Math.min(this.h-20,oY)), cX=Math.max(28,Math.min(this.w-28,oX));
+    ctx.save(); ctx.strokeStyle=th.axisColor; ctx.lineWidth=st.axisWidth; ctx.fillStyle=th.text;
+    ctx.font=`${st.tickFont}px 'JetBrains Mono',monospace`;
+
+    // X axis
+    ctx.beginPath(); ctx.moveTo(0,oY); ctx.lineTo(this.w,oY); ctx.stroke();
+    // Y axis
+    ctx.beginPath(); ctx.moveTo(oX,0); ctx.lineTo(oX,this.h); ctx.stroke();
+
+    // Arrows
+    if(st.showArrows){
+      this.arrow(ctx,this.w-10,oY,this.w,oY,7);
+      this.arrow(ctx,oX,10,oX,0,7);
+      ctx.font=`bold ${st.labelFont}px 'Outfit',sans-serif`;
+      ctx.fillText('x',this.w-16,oY-8);
+      ctx.fillText('y',oX+8,16);
+      ctx.font=`${st.tickFont}px 'JetBrains Mono',monospace`;
+    }
+
+    // X ticks
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    let sX=Math.floor(vp.xMin/xg.major)*xg.major;
+    for(let x=sX;x<=vp.xMax;x+=xg.major){
+      if(Math.abs(x)<1e-9) continue;
+      const s=((x-vp.xMin)/xr)*this.w;
+      ctx.beginPath();ctx.moveTo(s,cY-4);ctx.lineTo(s,cY+4);ctx.stroke();
+      const t=this.fmtNum(x);
+      ctx.fillStyle=th.bg; ctx.fillRect(s-16,cY+6,32,14);
+      ctx.fillStyle=th.text; ctx.fillText(t,s,cY+6);
+    }
+    // Y ticks
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    let sY=Math.floor(vp.yMin/yg.major)*yg.major;
+    for(let y=sY;y<=vp.yMax;y+=yg.major){
+      if(Math.abs(y)<1e-9) continue;
+      const s=((vp.yMax-y)/yr)*this.h;
+      ctx.beginPath();ctx.moveTo(cX-4,s);ctx.lineTo(cX+4,s);ctx.stroke();
+      const t=this.fmtNum(y);
+      ctx.fillStyle=th.bg; ctx.fillRect(cX-34,s-7,28,14);
+      ctx.fillStyle=th.text; ctx.fillText(t,cX-6,s);
+    }
+    // Origin
+    if(oX>=0&&oX<=this.w&&oY>=0&&oY<=this.h){
+      ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('0',oX-4,oY+4);
+    }
+    ctx.restore();
+  }
+
+  arrow(ctx,fx,fy,tx,ty,hl=7){
+    const a=Math.atan2(ty-fy,tx-fx);
+    ctx.save();ctx.beginPath();ctx.moveTo(tx,ty);
+    ctx.lineTo(tx-hl*Math.cos(a-Math.PI/6),ty-hl*Math.sin(a-Math.PI/6));
+    ctx.lineTo(tx-hl*Math.cos(a+Math.PI/6),ty-hl*Math.sin(a+Math.PI/6));
+    ctx.closePath();ctx.fillStyle=ctx.strokeStyle;ctx.fill();ctx.restore();
+  }
+
+  fmtNum(v){
+    if(Math.abs(v)>=1000||(Math.abs(v)<0.01&&v!==0)) return v.toExponential(1);
+    return parseFloat(v.toFixed(4)).toString();
+  }
+
+  drawWaves(ctx,vp) {
+    const xr=vp.xMax-vp.xMin, yr=vp.yMax-vp.yMin;
+    state.waves.forEach(w=>{
+      if(!w.visible||!w.compiled||!w.compiled.valid) return;
+      const nPts=Math.max(600,Math.min(2400,Math.round(this.w*1.5)));
+      const pts=MathEngine.sampleWave(w.compiled.fn,w.v,vp.xMin,vp.xMax,state.time.current,nPts);
+      ctx.save();ctx.beginPath();ctx.strokeStyle=w.color;ctx.lineWidth=w.lineWidth;
+      ctx.globalAlpha=w.opacity;
+      if(w.lineDash==='dashed') ctx.setLineDash([8,6]);
+      else if(w.lineDash==='dotted') ctx.setLineDash([3,4]);
+      else ctx.setLineDash([]);
+      let seg=false;
+      pts.forEach(p=>{
+        if(p.brk){seg=false;return;}
+        const sx=((p.x-vp.xMin)/xr)*this.w, sy=((vp.yMax-p.y)/yr)*this.h;
+        if(!seg){ctx.moveTo(sx,sy);seg=true;} else ctx.lineTo(sx,sy);
+      });
+      ctx.stroke();
+
+      // Propagation vectors
+      if(state.styles.showVectors&&Math.abs(w.v)>0.01){
+        this.drawVectors(ctx,w,pts,vp);
+      }
+      ctx.restore();
+    });
+  }
+
+  drawVectors(ctx,wave,pts,vp){
+    const dir=Math.sign(wave.v), len=Math.min(36,Math.max(16,Math.abs(wave.v)*8));
+    const xr=vp.xMax-vp.xMin, yr=vp.yMax-vp.yMin;
+    ctx.save();ctx.strokeStyle=wave.color;ctx.fillStyle=wave.color;ctx.lineWidth=2;
+    ctx.setLineDash([]);ctx.globalAlpha=state.styles.vectorOpacity;
+    [0.25,0.5,0.75].forEach(pct=>{
+      const idx=Math.floor(pts.length*pct), p=pts[idx];
+      if(!p||p.brk||Math.abs(p.y)<0.2) return;
+      const sx=((p.x-vp.xMin)/xr)*this.w, sy=((vp.yMax-p.y)/yr)*this.h;
+      const oY=p.y>=0?-12:12, aY=sy+oY;
+      const fX=sx-(dir*len*0.5), tX=sx+(dir*len*0.5);
+      ctx.beginPath();ctx.moveTo(fX,aY);ctx.lineTo(tX,aY);ctx.stroke();
+      this.arrow(ctx,fX,aY,tX,aY,6);
+      ctx.font="10px 'JetBrains Mono',monospace";ctx.textAlign='center';
+      ctx.fillText(`v=${wave.v>0?'+':''}${wave.v}`,sx,aY-(p.y>=0?6:-14));
+    });
+    ctx.restore();
+  }
+
+  drawResultant(ctx,vp){
+    const active=state.waves.filter(w=>w.inSum&&w.compiled&&w.compiled.valid);
+    if(!active.length) return;
+    const xr=vp.xMax-vp.xMin, yr=vp.yMax-vp.yMin;
+    const nPts=Math.max(800,Math.min(2600,Math.round(this.w*1.6)));
+    const step=xr/(nPts-1), t=state.time.current, res=state.resultant;
+    const pts=[];
+    for(let i=0;i<nPts;i++){
+      const x=vp.xMin+i*step;
+      let sum=0, sing=false;
+      for(const w of active){
+        try{const v=w.compiled.fn(x,t,w.v);if(isNaN(v)||!isFinite(v)||Math.abs(v)>150){sing=true;break;}sum+=v;}
+        catch(e){sing=true;break;}
+      }
+      pts.push(sing?{x,y:NaN,brk:true}:{x,y:sum,brk:false});
+    }
+    ctx.save();
+
+    // Fill
+    if(res.fillArea){
+      const zY=((vp.yMax)/yr)*this.h;
+      ctx.fillStyle=res.color; ctx.globalAlpha=res.fillOpacity||0.12;
+      ctx.beginPath();let started=false;
+      pts.forEach(p=>{
+        if(p.brk)return;
+        const sx=((p.x-vp.xMin)/xr)*this.w, sy=((vp.yMax-p.y)/yr)*this.h;
+        if(!started){ctx.moveTo(sx,zY);ctx.lineTo(sx,sy);started=true;}else ctx.lineTo(sx,sy);
+      });
+      if(started){const lp=pts[pts.length-1];ctx.lineTo(((lp.x-vp.xMin)/xr)*this.w,zY);ctx.closePath();ctx.fill();}
+    }
+
+    // Stroke
+    ctx.beginPath();ctx.strokeStyle=res.color;ctx.lineWidth=res.lineWidth;ctx.globalAlpha=res.opacity;
+    ctx.setLineDash([]);
+    if(state.themeKey==='darkPro'||state.themeKey==='cyberpunk'){ctx.shadowColor=res.color;ctx.shadowBlur=8;}
+    let seg=false;
+    pts.forEach(p=>{
+      if(p.brk){seg=false;return;}
+      const sx=((p.x-vp.xMin)/xr)*this.w, sy=((vp.yMax-p.y)/yr)*this.h;
+      if(!seg){ctx.moveTo(sx,sy);seg=true;}else ctx.lineTo(sx,sy);
+    });
+    ctx.stroke();ctx.restore();
+  }
+
+  drawInspector(ctx,vp){
+    const ix=this.hoverWorld.x, th=state.theme;
+    if(ix<vp.xMin||ix>vp.xMax) return;
+    const xr=vp.xMax-vp.xMin, yr=vp.yMax-vp.yMin;
+    const sx=((ix-vp.xMin)/xr)*this.w;
+    ctx.save();
+    // Vertical line
+    ctx.beginPath();ctx.strokeStyle=th.crosshair;ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
+    ctx.moveTo(sx,0);ctx.lineTo(sx,this.h);ctx.stroke();ctx.setLineDash([]);
+    // Evaluate
+    const ev=MathEngine.evaluateAt(state.waves,ix,state.time.current);
+    // Dots on components
+    ev.components.forEach(c=>{
+      if(!c.visible) return;
+      const sy=((vp.yMax-c.val)/yr)*this.h;
+      ctx.beginPath();ctx.arc(sx,sy,5,0,Math.PI*2);ctx.fillStyle=c.color;ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+    });
+    // Dot on resultant
+    if(state.resultant.visible){
+      const sy=((vp.yMax-ev.resultant)/yr)*this.h;
+      ctx.beginPath();ctx.arc(sx,sy,7,0,Math.PI*2);ctx.fillStyle=state.resultant.color;ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.stroke();
+    }
+    // HUD
+    const items=[{l:`x = ${ix.toFixed(2)} m`,c:th.text,h:true},{l:`t = ${state.time.current.toFixed(2)} s`,c:'#64748b',h:true}];
+    ev.components.forEach(c=>items.push({l:`${c.name}: ${c.val.toFixed(3)}`,c:c.color}));
+    if(state.resultant.visible) items.push({l:`Σ Y: ${ev.resultant.toFixed(3)}`,c:state.resultant.color,b:true});
+    const bW=170, lH=18, bH=items.length*lH+16;
+    let bX=sx+14, bY=16;
+    if(bX+bW>this.w) bX=sx-bW-14;
+    ctx.shadowColor='rgba(0,0,0,0.3)';ctx.shadowBlur=10;
+    ctx.fillStyle=state.themeKey==='geogebra'||state.themeKey==='milimetrado'?'rgba(255,255,255,0.94)':'rgba(15,23,42,0.94)';
+    this.roundRect(ctx,bX,bY,bW,bH,8);ctx.fill();
+    ctx.strokeStyle=th.majorGrid;ctx.lineWidth=1;ctx.stroke();
+    ctx.shadowBlur=0;ctx.textAlign='left';ctx.textBaseline='top';
+    items.forEach((it,i)=>{
+      const py=bY+8+i*lH;ctx.fillStyle=it.c;
+      ctx.font=it.b?"bold 12px 'JetBrains Mono',monospace":it.h?"600 11px 'Outfit',sans-serif":"11px 'JetBrains Mono',monospace";
+      if(!it.h){ctx.beginPath();ctx.arc(bX+12,py+6,3.5,0,Math.PI*2);ctx.fill();ctx.fillText(it.l,bX+22,py);}
+      else ctx.fillText(it.l,bX+10,py);
+    });
+    ctx.restore();
+  }
+
+  roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);
+    ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+  }
+
+  bindEvents(){
+    const c=this.canvas;
+    c.addEventListener('mousemove',e=>{
+      const r=c.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
+      this.hoverWorld=this.screenToWorld(px,py);
+      if(this.dragging){
+        const dx=px-this.dragStart.x, dy=py-this.dragStart.y;
+        const vp=this.dragVP, xr=vp.xMax-vp.xMin, yr=vp.yMax-vp.yMin;
+        if(this.dragMode==='pan'){
+          const dwx=-(dx/this.w)*xr, dwy=(dy/this.h)*yr;
+          setViewport(vp.xMin+dwx,vp.xMax+dwx,vp.yMin+dwy,vp.yMax+dwy);
+        } else if(this.dragMode==='scale-x'){
+          const f=Math.exp(-dx/250);
+          setViewport(vp.xMin*f,vp.xMax*f,vp.yMin,vp.yMax);
+        } else if(this.dragMode==='scale-y'){
+          const f=Math.exp(dy/200);
+          setViewport(vp.xMin,vp.xMax,vp.yMin*f,vp.yMax*f);
+        }
+      } else {
+        // Cursor mode
+        const vp=state.viewport, oY=((vp.yMax)/(vp.yMax-vp.yMin))*this.h, oX=((-vp.xMin)/(vp.xMax-vp.xMin))*this.w;
+        const nX=Math.abs(py-oY)<14, nY=Math.abs(px-oX)<14;
+        c.style.cursor=nX&&nY?'move':nX?'ew-resize':nY?'ns-resize':state.inspector.active?'crosshair':'grab';
+      }
+    });
+    c.addEventListener('mousedown',e=>{
+      if(e.button!==0)return;
+      const r=c.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
+      this.dragging=true;this.dragStart={x:px,y:py};this.dragVP={...state.viewport};
+      const vp=state.viewport, oY=((vp.yMax)/(vp.yMax-vp.yMin))*this.h, oX=((-vp.xMin)/(vp.xMax-vp.xMin))*this.w;
+      const nX=Math.abs(py-oY)<14, nY=Math.abs(px-oX)<14;
+      this.dragMode=nX&&!nY?'scale-x':nY&&!nX?'scale-y':'pan';
+      c.style.cursor=this.dragMode==='pan'?'grabbing':this.dragMode==='scale-x'?'ew-resize':'ns-resize';
+    });
+    window.addEventListener('mouseup',()=>{this.dragging=false;c.style.cursor='grab';});
+    c.addEventListener('mouseleave',()=>{this.hoverWorld=null;});
+    c.addEventListener('wheel',e=>{
+      e.preventDefault();
+      const r=c.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
+      const wp=this.screenToWorld(px,py);
+      zoom(e.deltaY<0?0.88:1.14,wp.x,wp.y);
+    },{passive:false});
+    // Touch
+    let pinchDist=null,pinchCenter=null;
+    c.addEventListener('touchstart',e=>{
+      if(e.touches.length===1){
+        e.preventDefault();
+        const t=e.touches[0],r=c.getBoundingClientRect();
+        this.dragging=true;this.dragMode='pan';
+        this.dragStart={x:t.clientX-r.left,y:t.clientY-r.top};
+        this.dragVP={...state.viewport};
+      } else if(e.touches.length===2){
+        e.preventDefault();this.dragging=false;
+        const t1=e.touches[0],t2=e.touches[1];
+        pinchDist=Math.hypot(t2.clientX-t1.clientX,t2.clientY-t1.clientY);
+        const r=c.getBoundingClientRect();
+        pinchCenter=this.screenToWorld((t1.clientX+t2.clientX)/2-r.left,(t1.clientY+t2.clientY)/2-r.top);
+      }
+    },{passive:false});
+    c.addEventListener('touchmove',e=>{
+      if(e.touches.length===1&&this.dragging){
+        e.preventDefault();
+        const t=e.touches[0],r=c.getBoundingClientRect();
+        const px=t.clientX-r.left,py=t.clientY-r.top;
+        const dx=px-this.dragStart.x,dy=py-this.dragStart.y;
+        const vp=this.dragVP,xr=vp.xMax-vp.xMin,yr=vp.yMax-vp.yMin;
+        setViewport(vp.xMin-(dx/this.w)*xr,vp.xMax-(dx/this.w)*xr,vp.yMin+(dy/this.h)*yr,vp.yMax+(dy/this.h)*yr);
+      } else if(e.touches.length===2&&pinchDist){
+        e.preventDefault();
+        const d=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);
+        if(d>10){zoom(pinchDist/d,pinchCenter.x,pinchCenter.y);pinchDist=d;}
+      }
+    },{passive:false});
+    c.addEventListener('touchend',e=>{if(e.touches.length===0){this.dragging=false;pinchDist=null;}});
+  }
+}
+
+// ========== WAVE EDITOR UI ==========
+function renderEditor() {
+  const el = document.getElementById('tab-editor');
+  let html = `
+    <div class="waves-header">
+      <div><h3>Ondas Componentes</h3><p style="font-size:11px;color:var(--text-muted);margin-top:2px">Ecuaciones $y(x,t)$ con superposición</p></div>
+      <button class="btn btn-primary btn-sm" id="btn-add-wave">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Nueva Onda
+      </button>
+    </div>
+
+    <div class="resultant-card">
+      <div class="res-header">
+        <div class="res-title">
+          <div class="badge-sigma">Σ</div>
+          <div>
+            <div class="res-name">Resultante Y(x, t)</div>
+            <div class="res-eq">${state.waves.filter(w=>w.inSum).map(w=>w.name.split('(')[0]).join(' + ')}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="toggle-wrap"><span class="toggle-label">Ver</span><button class="toggle ${state.resultant.visible?'on':''}" id="toggle-res-vis"></button></div>
+          <div class="toggle-wrap"><span class="toggle-label">Área</span><button class="toggle ${state.resultant.fillArea?'on':''}" id="toggle-res-fill"></button></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  state.waves.forEach((w,i) => {
+    const dirLabel = w.v>0?'→ Derecha':w.v<0?'← Izquierda':'• Estática';
+    const badgeClass = w.v>0?'badge-right':w.v<0?'badge-left':'badge-static';
+    html += `
+      <div class="wave-card ${!w.visible?'hidden-wave':''}" id="card-${w.id}">
+        <div class="wave-card-top">
+          <div class="wave-identity">
+            <span class="color-dot" style="background:${w.color};color:${w.color}"></span>
+            <span class="wave-title">${w.name}</span>
+            <span class="wave-badge ${badgeClass}">${dirLabel}</span>
+          </div>
+          <div class="wave-actions">
+            <button class="btn-vis ${w.visible?'active':''}" data-id="${w.id}" title="Visible">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+            <button class="btn-sum ${w.inSum?'active':''}" data-id="${w.id}" title="En Σ" style="font-weight:800;font-size:13px">Σ</button>
+            <button class="btn-dup" data-id="${w.id}" title="Duplicar">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+            <button class="btn-delete" data-id="${w.id}" title="Eliminar">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div>
+        <div class="eq-row">
+          <div class="eq-input-wrap">
+            <span class="eq-prefix">${w.name.split('(')[0]} =</span>
+            <input type="text" class="eq-input" data-id="${w.id}" value="${w.expr}" placeholder="ej: 2*sin(x - 2*t)" spellcheck="false" autocomplete="off">
+          </div>
+        </div>
+        <div class="katex-preview" id="kp-${w.id}">${w.compiled?w.compiled.latex:w.expr}</div>
+        ${w.compiled&&!w.compiled.valid?`<div class="wave-error">${w.compiled.error}</div>`:''}
+        <div class="param-grid">
+          <div class="param-box">
+            <div class="param-label"><label>Velocidad v:</label><span class="param-val" id="vl-${w.id}">${w.v} m/s</span></div>
+            <input type="range" class="v-slider" data-id="${w.id}" min="-5" max="5" step="0.1" value="${w.v}">
+          </div>
+          <div class="param-box">
+            <div class="param-label"><label>Estilo:</label></div>
+            <div style="display:flex;gap:4px;align-items:center">
+              <input type="color" class="color-pick" data-id="${w.id}" value="${w.color}">
+              <select class="form-select dash-sel" data-id="${w.id}">
+                <option value="solid" ${w.lineDash==='solid'?'selected':''}>Continua</option>
+                <option value="dashed" ${w.lineDash==='dashed'?'selected':''}>Trazos</option>
+                <option value="dotted" ${w.lineDash==='dotted'?'selected':''}>Puntos</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  el.innerHTML = html;
+
+  // Bind events
+  document.getElementById('btn-add-wave')?.addEventListener('click',()=>{ addWave(); });
+  document.getElementById('toggle-res-vis')?.addEventListener('click',function(){ state.resultant.visible=!state.resultant.visible; this.classList.toggle('on'); });
+  document.getElementById('toggle-res-fill')?.addEventListener('click',function(){ state.resultant.fillArea=!state.resultant.fillArea; this.classList.toggle('on'); });
+
+  el.querySelectorAll('.eq-input').forEach(inp=>{
+    inp.addEventListener('input',e=>{updateWave(e.target.dataset.id,{expr:e.target.value});renderKatex();});
+    inp.addEventListener('focus',()=>{activeInput=inp;});
+  });
+  el.querySelectorAll('.v-slider').forEach(s=>{
+    s.addEventListener('input',e=>{
+      const id=e.target.dataset.id, v=parseFloat(e.target.value);
+      updateWave(id,{v});
+      const lbl=document.getElementById('vl-'+id);if(lbl) lbl.textContent=v+' m/s';
+    });
+  });
+  el.querySelectorAll('.color-pick').forEach(p=>{p.addEventListener('input',e=>{updateWave(e.target.dataset.id,{color:e.target.value});renderEditor();});});
+  el.querySelectorAll('.dash-sel').forEach(s=>{s.addEventListener('change',e=>{updateWave(e.target.dataset.id,{lineDash:e.target.value});});});
+  el.querySelectorAll('.btn-vis').forEach(b=>{b.addEventListener('click',()=>{const w=state.waves.find(w=>w.id===b.dataset.id);if(w){updateWave(w.id,{visible:!w.visible});renderEditor();}});});
+  el.querySelectorAll('.btn-sum').forEach(b=>{b.addEventListener('click',()=>{const w=state.waves.find(w=>w.id===b.dataset.id);if(w){updateWave(w.id,{inSum:!w.inSum});renderEditor();}});});
+  el.querySelectorAll('.btn-dup').forEach(b=>{b.addEventListener('click',()=>{const w=state.waves.find(w=>w.id===b.dataset.id);if(w) addWave({expr:w.expr,v:w.v});});});
+  el.querySelectorAll('.btn-delete').forEach(b=>{b.addEventListener('click',()=>{removeWave(b.dataset.id);});});
+
+  renderKatex();
+}
+
+function renderKatex() {
+  if(typeof window.katex==='undefined'){setTimeout(renderKatex,100);return;}
+  document.querySelectorAll('.katex-preview').forEach(el=>{
+    const id=el.id.replace('kp-','');
+    const w=state.waves.find(w=>w.id===id);
+    if(!w) return;
+    try{window.katex.render(w.compiled?w.compiled.latex:w.expr,el,{throwOnError:false,displayMode:false});}
+    catch(e){el.textContent=w.expr;}
+  });
+}
+
+on('wavesChanged', renderEditor);
+
+// ========== DIDACTIC PRESETS ==========
+const PRESETS = [
+  { id:'pulsos_iguales', cat:'Interferencia Constructiva', title:'Dos pulsos iguales en sentidos opuestos',
+    desc:'Dos pulsos lorentzianos idénticos se aproximan (+2 m/s y -2 m/s). Al coincidir, la amplitud se duplica por superposición constructiva.',
+    qs:[{q:'¿Qué ocurrirá con la altura máxima cuando ambos pulsos coincidan?',h:'Suma las amplitudes: 2 + 2'}],
+    setup(){state.waves.length=0;
+      state.waves.push({id:'p1',name:'y₁(x, t)',expr:'2/((x-2*t+8)^2+1)',v:2,color:'#3b82f6',lineWidth:2.5,lineDash:'solid',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.push({id:'p2',name:'y₂(x, t)',expr:'2/((x+2*t-8)^2+1)',v:-2,color:'#10b981',lineWidth:2.5,lineDash:'dashed',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.forEach(w=>{w.compiled=MathEngine.compile(w.expr);});
+      setViewport(-12,12,-3,6);state.time.current=0;state.time.playing=false;emit('wavesChanged');
+    }
+  },
+  { id:'destructiva', cat:'Interferencia Destructiva', title:'Pulsos opuestos: uno positivo y uno negativo',
+    desc:'Un pulso positivo y otro negativo del mismo perfil se acercan. Al coincidir, la cuerda queda momentáneamente plana (cancelación total).',
+    qs:[{q:'¿Qué le ocurre a la energía cuando la cuerda está plana?',h:'La energía se conserva: está en forma cinética, no potencial.'}],
+    setup(){state.waves.length=0;
+      state.waves.push({id:'d1',name:'y₁(x, t)',expr:'2/((x-2*t+8)^2+1)',v:2,color:'#3b82f6',lineWidth:2.5,lineDash:'solid',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.push({id:'d2',name:'y₂(x, t)',expr:'-2/((x+2*t-8)^2+1)',v:-2,color:'#ef4444',lineWidth:2.5,lineDash:'dashed',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.forEach(w=>{w.compiled=MathEngine.compile(w.expr);});
+      setViewport(-12,12,-4,4);state.time.current=0;state.time.playing=false;emit('wavesChanged');
+    }
+  },
+  { id:'estacionaria', cat:'Onda Estacionaria', title:'Formación de onda estacionaria',
+    desc:'Dos ondas sinusoidales de igual amplitud, frecuencia y velocidad viajando en sentidos opuestos forman nodos y vientres estacionarios.',
+    qs:[{q:'¿Dónde se forman los nodos? ¿Se desplazan con el tiempo?',h:'Los nodos se forman donde sin(x)=0: en x=0, π, 2π...'}],
+    setup(){state.waves.length=0;
+      state.waves.push({id:'s1',name:'y₁(x, t)',expr:'2*sin(x - 2*t)',v:2,color:'#3b82f6',lineWidth:2.5,lineDash:'solid',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.push({id:'s2',name:'y₂(x, t)',expr:'2*sin(x + 2*t)',v:-2,color:'#ef4444',lineWidth:2.5,lineDash:'dashed',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.forEach(w=>{w.compiled=MathEngine.compile(w.expr);});
+      setViewport(-12,12,-6,6);state.time.current=0;state.time.playing=false;emit('wavesChanged');
+    }
+  },
+  { id:'batimiento', cat:'Batimiento', title:'Batimiento por frecuencias cercanas',
+    desc:'Dos ondas con frecuencias ligeramente diferentes producen un patrón de batimiento: la amplitud de la resultante oscila periódicamente.',
+    qs:[{q:'¿Cuál es la frecuencia de batimiento?',h:'f_bat = |f₁ - f₂| = |1.0 - 0.85| = 0.15 Hz'}],
+    setup(){state.waves.length=0;
+      state.waves.push({id:'b1',name:'y₁(x, t)',expr:'2*sin(1.0*x - 2*t)',v:2,color:'#3b82f6',lineWidth:2.5,lineDash:'solid',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.push({id:'b2',name:'y₂(x, t)',expr:'2*sin(0.85*x - 2*t)',v:2,color:'#f59e0b',lineWidth:2.5,lineDash:'dashed',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.forEach(w=>{w.compiled=MathEngine.compile(w.expr);});
+      setViewport(-30,30,-6,6);state.time.current=0;state.time.playing=false;emit('wavesChanged');
+    }
+  },
+  { id:'paquete', cat:'Paquete de Ondas', title:'Paquete de onda gaussiano',
+    desc:'Un paquete de onda con envolvente gaussiana se propaga manteniendo su forma. Combina localización espacial con carácter ondulatorio.',
+    qs:[{q:'¿Qué relación hay entre la anchura del paquete y el rango de frecuencias?',h:'Relación de incertidumbre: Δx · Δk ≥ 1/2'}],
+    setup(){state.waves.length=0;
+      state.waves.push({id:'g1',name:'y₁(x, t)',expr:'2*exp(-((x-2*t)^2)/8)*sin(3*(x-2*t))',v:2,color:'#8b5cf6',lineWidth:2.5,lineDash:'solid',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.forEach(w=>{w.compiled=MathEngine.compile(w.expr);});
+      setViewport(-15,15,-4,4);state.time.current=0;state.time.playing=false;emit('wavesChanged');
+    }
+  },
+  { id:'triple', cat:'Superposición Triple', title:'Tres ondas con velocidades diferentes',
+    desc:'Tres ondas sinusoidales con diferentes amplitudes, frecuencias y velocidades de propagación. Observa la complejidad de la resultante.',
+    qs:[{q:'¿La resultante es periódica?',h:'Solo si las frecuencias son conmensurables (su cociente es racional).'}],
+    setup(){state.waves.length=0;
+      state.waves.push({id:'t1',name:'y₁(x, t)',expr:'2*sin(x - 2*t)',v:2,color:'#3b82f6',lineWidth:2.5,lineDash:'solid',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.push({id:'t2',name:'y₂(x, t)',expr:'1.5*sin(1.5*x + t)',v:-0.67,color:'#ef4444',lineWidth:2.5,lineDash:'dashed',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.push({id:'t3',name:'y₃(x, t)',expr:'1*cos(0.8*x - 1.5*t)',v:1.875,color:'#10b981',lineWidth:2.5,lineDash:'dotted',opacity:0.9,visible:true,inSum:true,compiled:null});
+      state.waves.forEach(w=>{w.compiled=MathEngine.compile(w.expr);});
+      setViewport(-12,12,-6,6);state.time.current=0;state.time.playing=false;emit('wavesChanged');
+    }
+  }
+];
+
+function renderDidactic() {
+  const el=document.getElementById('tab-didactic');
+  let html='<div style="margin-bottom:14px"><h3 style="font-size:14px;font-weight:700">Situaciones Didácticas</h3><p style="font-size:11px;color:var(--text-muted);margin-top:2px">Presets para explorar fenómenos ondulatorios</p></div>';
+  PRESETS.forEach(p=>{
+    html+=`<div class="preset-card" data-preset="${p.id}">
+      <div class="preset-category">${p.cat}</div>
+      <div class="preset-title">${p.title}</div>
+      <div class="preset-desc">${p.desc}</div>
+      <div class="preset-questions">${p.qs.map((q,i)=>`
+        <div class="preset-q">${q.q}</div>
+        <button class="hint-toggle" data-hint="${p.id}-${i}">💡 Ver pista</button>
+        <div class="hint-text" id="hint-${p.id}-${i}">${q.h}</div>
+      `).join('')}</div>
+    </div>`;
+  });
+  el.innerHTML=html;
+
+  el.querySelectorAll('.preset-card').forEach(card=>{
+    card.addEventListener('click',e=>{
+      if(e.target.classList.contains('hint-toggle')) return;
+      const p=PRESETS.find(p=>p.id===card.dataset.preset);
+      if(p){p.setup();el.querySelectorAll('.preset-card').forEach(c=>c.classList.remove('active'));card.classList.add('active');}
+    });
+  });
+  el.querySelectorAll('.hint-toggle').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const ht=document.getElementById('hint-'+btn.dataset.hint);
+      if(ht) ht.classList.toggle('show');
+    });
+  });
+}
+
+// ========== VIRTUAL KEYBOARD ==========
+let activeInput = null;
+const VK_TABS = {
+  basic: { label:'Básico', keys:['0','1','2','3','4','5','6','7','8','9','.','(',')','x','t','v','+','-','*','/','^','π','e',' '] },
+  funcs: { label:'Funciones', keys:['sin(','cos(','tan(','asin(','acos(','atan(','sqrt(','abs(','exp(','ln(','log10(','sinh(','cosh(','tanh(','floor(','ceil(','sign('] },
+  physics: { label:'Ondas', keys:['sin(x-v*t)','cos(x-v*t)','sin(x+v*t)','2*sin(x-2*t)','A*sin(k*x-w*t)','exp(-((x-v*t)^2)/s)','1/((x-v*t)^2+1)','2/((x-v*t)^4+1)'] },
+};
+let vkTab='basic';
+
+function renderVK(){
+  const el=document.getElementById('vk-container');
+  const tab=VK_TABS[vkTab];
+  let html='<div class="vk-tabs">';
+  Object.keys(VK_TABS).forEach(k=>{
+    html+=`<button class="vk-tab ${vkTab===k?'active':''}" data-vk-tab="${k}">${VK_TABS[k].label}</button>`;
+  });
+  html+='</div><div class="vk-grid">';
+  tab.keys.forEach(k=>{
+    const wide=k.length>4?'wide':'';
+    html+=`<button class="vk-key ${wide}" data-vk-key="${k}">${k==='π'?'π':k==='*'?'×':k==='/'?'÷':k===' '?'⎵':k}</button>`;
+  });
+  html+='</div><div class="vk-close-row"><button class="btn btn-outline btn-sm" id="vk-close">Cerrar</button></div>';
+  el.innerHTML=html;
+
+  el.querySelectorAll('.vk-tab').forEach(b=>{b.addEventListener('click',()=>{vkTab=b.dataset.vkTab;renderVK();});});
+  el.querySelectorAll('.vk-key').forEach(b=>{
+    b.addEventListener('click',()=>{
+      if(!activeInput) return;
+      let key=b.dataset.vkKey;
+      if(key==='π') key='pi';
+      if(key===' ') key=' ';
+      const start=activeInput.selectionStart||0;
+      const end=activeInput.selectionEnd||0;
+      const val=activeInput.value;
+      activeInput.value=val.slice(0,start)+key+val.slice(end);
+      activeInput.selectionStart=activeInput.selectionEnd=start+key.length;
+      activeInput.focus();
+      activeInput.dispatchEvent(new Event('input'));
+    });
+  });
+  el.querySelector('#vk-close')?.addEventListener('click',()=>{el.classList.remove('visible');});
+}
+renderVK();
+
+// ========== PALETTE ==========
+function renderPalette(){
+  const el=document.getElementById('palette-body');
+  let html=`
+    <div class="palette-section">
+      <h4>Tema</h4>
+      <div class="theme-grid">
+        ${Object.keys(THEMES).map(k=>{
+          const t=THEMES[k];
+          return `<div class="theme-card ${state.themeKey===k?'active':''}" data-theme="${k}">
+            <div class="theme-swatch"><span style="background:${t.bg}"></span><span style="background:${t.axisColor}"></span><span style="background:${t.majorGrid}"></span><span style="background:${t.resultant}"></span></div>
+            <div class="theme-name">${t.name}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="palette-section">
+      <h4>Cuadrícula</h4>
+      <div class="palette-row"><label>Mayor visible</label><button class="toggle ${state.styles.showMajor?'on':''}" id="pal-major"></button></div>
+      <div class="palette-row"><label>Menor visible</label><button class="toggle ${state.styles.showMinor?'on':''}" id="pal-minor"></button></div>
+      <div class="palette-row"><label>Grosor mayor: ${state.styles.majorGridW}</label><input type="range" min="0.5" max="3" step="0.1" value="${state.styles.majorGridW}" id="pal-major-w"></div>
+      <div class="palette-row"><label>Grosor menor: ${state.styles.minorGridW}</label><input type="range" min="0.2" max="2" step="0.1" value="${state.styles.minorGridW}" id="pal-minor-w"></div>
+    </div>
+    <div class="palette-section">
+      <h4>Ejes</h4>
+      <div class="palette-row"><label>Grosor: ${state.styles.axisWidth}</label><input type="range" min="1" max="4" step="0.5" value="${state.styles.axisWidth}" id="pal-axis-w"></div>
+      <div class="palette-row"><label>Flechas</label><button class="toggle ${state.styles.showArrows?'on':''}" id="pal-arrows"></button></div>
+      <div class="palette-row"><label>Tamaño ticks: ${state.styles.tickFont}px</label><input type="range" min="8" max="18" step="1" value="${state.styles.tickFont}" id="pal-tick-font"></div>
+    </div>
+    <div class="palette-section">
+      <h4>Vectores de Propagación</h4>
+      <div class="palette-row"><label>Mostrar vectores</label><button class="toggle ${state.styles.showVectors?'on':''}" id="pal-vectors"></button></div>
+      <div class="palette-row"><label>Opacidad: ${state.styles.vectorOpacity}</label><input type="range" min="0.1" max="1" step="0.05" value="${state.styles.vectorOpacity}" id="pal-vec-op"></div>
+    </div>
+    <div class="palette-section">
+      <h4>Resultante</h4>
+      <div class="palette-row"><label>Color</label><input type="color" value="${state.resultant.color}" id="pal-res-color"></div>
+      <div class="palette-row"><label>Grosor: ${state.resultant.lineWidth}</label><input type="range" min="1" max="6" step="0.5" value="${state.resultant.lineWidth}" id="pal-res-w"></div>
+      <div class="palette-row"><label>Opacidad relleno: ${state.resultant.fillOpacity}</label><input type="range" min="0" max="0.4" step="0.02" value="${state.resultant.fillOpacity}" id="pal-res-fill-op"></div>
+    </div>
+  `;
+  el.innerHTML=html;
+
+  // Bind
+  el.querySelectorAll('.theme-card').forEach(c=>{c.addEventListener('click',()=>{setTheme(c.dataset.theme);renderPalette();});});
+  el.querySelector('#pal-major')?.addEventListener('click',function(){state.styles.showMajor=!state.styles.showMajor;this.classList.toggle('on');});
+  el.querySelector('#pal-minor')?.addEventListener('click',function(){state.styles.showMinor=!state.styles.showMinor;this.classList.toggle('on');});
+  el.querySelector('#pal-major-w')?.addEventListener('input',e=>{state.styles.majorGridW=parseFloat(e.target.value);});
+  el.querySelector('#pal-minor-w')?.addEventListener('input',e=>{state.styles.minorGridW=parseFloat(e.target.value);});
+  el.querySelector('#pal-axis-w')?.addEventListener('input',e=>{state.styles.axisWidth=parseFloat(e.target.value);});
+  el.querySelector('#pal-arrows')?.addEventListener('click',function(){state.styles.showArrows=!state.styles.showArrows;this.classList.toggle('on');});
+  el.querySelector('#pal-tick-font')?.addEventListener('input',e=>{state.styles.tickFont=parseInt(e.target.value);});
+  el.querySelector('#pal-vectors')?.addEventListener('click',function(){state.styles.showVectors=!state.styles.showVectors;this.classList.toggle('on');});
+  el.querySelector('#pal-vec-op')?.addEventListener('input',e=>{state.styles.vectorOpacity=parseFloat(e.target.value);});
+  el.querySelector('#pal-res-color')?.addEventListener('input',e=>{state.resultant.color=e.target.value;});
+  el.querySelector('#pal-res-w')?.addEventListener('input',e=>{state.resultant.lineWidth=parseFloat(e.target.value);});
+  el.querySelector('#pal-res-fill-op')?.addEventListener('input',e=>{state.resultant.fillOpacity=parseFloat(e.target.value);});
+}
+
+// ========== MODAL ==========
+let modalPlane = null;
+function openModal(){
+  document.getElementById('expanded-modal').classList.add('visible');
+  state.modal.open=true;
+  if(!modalPlane) modalPlane=new CartesianPlane(document.getElementById('modal-canvas'));
+  setTimeout(()=>{modalPlane.resize();modalPlane.render();},50);
+}
+function closeModal(){
+  document.getElementById('expanded-modal').classList.remove('visible');
+  state.modal.open=false;
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+}
+
+// ========== SIDEBAR TABS ==========
+document.querySelectorAll('.sidebar-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.sidebar-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ========== SPLITTER ==========
+(function(){
+  const sp=document.getElementById('splitter'), sb=document.getElementById('sidebar'), ws=document.getElementById('workspace');
+  if(!sp||!sb||!ws) return;
+  let resizing=false;
+  sp.addEventListener('mousedown',()=>{resizing=true;sp.classList.add('active');document.body.style.cursor='col-resize';document.body.style.userSelect='none';});
+  window.addEventListener('mousemove',e=>{
+    if(!resizing) return;
+    const wr=ws.getBoundingClientRect(), px=e.clientX-wr.left;
+    if(px>280&&px<wr.width-300) sb.style.width=px+'px';
+  });
+  window.addEventListener('mouseup',()=>{if(resizing){resizing=false;sp.classList.remove('active');document.body.style.cursor='';document.body.style.userSelect='';}});
+})();
+
+// ========== CONTROLS ==========
+const mainPlane = new CartesianPlane(document.getElementById('main-canvas'));
+
+// Playback
+document.getElementById('btn-play').addEventListener('click',()=>{state.time.playing=!state.time.playing;updatePlayBtn();});
+document.getElementById('btn-step-back').addEventListener('click',()=>{state.time.current=Math.max(0,state.time.current-0.1);});
+document.getElementById('btn-step-fwd').addEventListener('click',()=>{state.time.current=Math.min(state.time.max,state.time.current+0.1);});
+document.getElementById('btn-reset-t').addEventListener('click',()=>{state.time.current=0;state.time.playing=false;updatePlayBtn();});
+document.getElementById('time-slider').addEventListener('input',e=>{state.time.current=parseFloat(e.target.value);});
+document.getElementById('speed-select').addEventListener('change',e=>{state.time.speed=parseFloat(e.target.value);});
+
+function updatePlayBtn(){
+  const btn=document.getElementById('btn-play');
+  btn.innerHTML=state.time.playing
+    ?'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>'
+    :'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+}
+
+// Toolbar
+document.getElementById('tb-zoom-in').addEventListener('click',()=>zoom(0.85));
+document.getElementById('tb-zoom-out').addEventListener('click',()=>zoom(1.14));
+document.getElementById('tb-reset').addEventListener('click',resetViewport);
+document.getElementById('tb-inspector').addEventListener('click',function(){state.inspector.active=!state.inspector.active;this.classList.toggle('active');});
+document.getElementById('tb-vectors').addEventListener('click',function(){state.styles.showVectors=!state.styles.showVectors;this.classList.toggle('active');});
+
+// Virtual Keyboard
+document.getElementById('btn-keyboard').addEventListener('click',()=>{
+  const el=document.getElementById('vk-container');
+  el.classList.toggle('visible');
+});
+
+// Header Buttons
+document.getElementById('btn-palette').addEventListener('click',()=>{
+  const el=document.getElementById('palette-overlay');
+  el.classList.toggle('visible');
+  if(el.classList.contains('visible')) renderPalette();
+});
+document.getElementById('palette-close').addEventListener('click',()=>{document.getElementById('palette-overlay').classList.remove('visible');});
+
+document.getElementById('btn-modal').addEventListener('click',openModal);
+document.getElementById('modal-close').addEventListener('click',closeModal);
+document.getElementById('modal-maximize')?.addEventListener('click',()=>{
+  const box=document.getElementById('modal-box');
+  state.modal.maximized=!state.modal.maximized;
+  box.classList.toggle('maximized');
+  if(modalPlane) setTimeout(()=>{modalPlane.resize();modalPlane.render();},100);
+});
+document.getElementById('modal-collapse')?.addEventListener('click',()=>{
+  const box=document.getElementById('modal-box');
+  box.style.display=box.style.display==='none'?'':'none';
+});
+document.getElementById('modal-fullscreen')?.addEventListener('click',()=>{
+  const el=document.getElementById('expanded-modal');
+  if(!document.fullscreenElement) el.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen().catch(()=>{});
+});
+document.getElementById('modal-play')?.addEventListener('click',()=>{state.time.playing=!state.time.playing;updatePlayBtn();});
+document.getElementById('modal-zoom-in')?.addEventListener('click',()=>zoom(0.85));
+document.getElementById('modal-zoom-out')?.addEventListener('click',()=>zoom(1.14));
+document.getElementById('modal-reset-view')?.addEventListener('click',resetViewport);
+
+// Keyboard shortcuts
+window.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT'){
+    if(e.key==='Escape') e.target.blur();
+    return;
+  }
+  if(e.code==='Space'){e.preventDefault();state.time.playing=!state.time.playing;updatePlayBtn();}
+  else if(e.key==='ArrowRight'){e.preventDefault();state.time.current=Math.min(state.time.max,state.time.current+0.1);}
+  else if(e.key==='ArrowLeft'){e.preventDefault();state.time.current=Math.max(0,state.time.current-0.1);}
+  else if(e.key==='r'||e.key==='R') resetViewport();
+  else if(e.key==='Escape'){closeModal();document.getElementById('palette-overlay').classList.remove('visible');}
+  else if(e.key==='k'||e.key==='K') document.getElementById('vk-container').classList.toggle('visible');
+  else if(e.key==='i'||e.key==='I'){state.inspector.active=!state.inspector.active;document.getElementById('tb-inspector').classList.toggle('active');}
+});
+
+// Window resize
+window.addEventListener('resize',()=>{mainPlane.resize();});
+
+// ========== ANIMATION LOOP ==========
+let lastFrame = performance.now();
+
+function loop(now) {
+  const dt = (now-lastFrame)/1000;
+  lastFrame = now;
+
+  if(state.time.playing){
+    state.time.current += dt * state.time.speed * state.time.dir;
+    if(state.time.current>state.time.max) state.time.current=0;
+    if(state.time.current<0) state.time.current=state.time.max;
+  }
+
+  // Update time UI
+  document.getElementById('time-display').textContent=`t = ${state.time.current.toFixed(2)} s`;
+  document.getElementById('time-slider').value=state.time.current.toFixed(2);
+
+  // Render
+  mainPlane.render();
+  if(state.modal.open && modalPlane) modalPlane.render();
+
+  requestAnimationFrame(loop);
+}
+
+// ========== INIT ==========
+renderEditor();
+renderDidactic();
+renderPalette();
+document.getElementById('tb-vectors').classList.add('active'); // vectors on by default
+
+// Start animation
+requestAnimationFrame(loop);
+console.log('✓ OndaLab Pro inicializado con éxito.');
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,556 @@
+/* ==========================================================================
+   controls.css - Tarjetas de Ondas, Resultante, Didáctica y Barra de Tiempo
+   ========================================================================== */
+
+/* ==========================================================================
+   GESTOR DE ONDAS COMPONENTES
+   ========================================================================== */
+#waves-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.waves-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.waves-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-waves-glow {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.waves-header h3 {
+  font-size: 1rem;
+  color: var(--text-main);
+}
+
+.subtitle {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   TARJETA ONDA RESULTANTE (SUPERPOSICIÓN)
+   ========================================================================== */
+.resultant-card {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(99, 102, 241, 0.05));
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.1);
+  transition: all var(--transition-fast);
+}
+
+.resultant-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.res-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge-sum {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #ffffff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+
+.res-name {
+  font-size: 0.92rem;
+  color: #f5f3ff;
+}
+
+.res-equation-preview {
+  font-size: 0.85rem;
+  color: #c4b5fd;
+  margin-top: 2px;
+}
+
+.res-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   TARJETAS DE ONDAS INDIVIDUALES
+   ========================================================================== */
+.waves-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wave-card {
+  background-color: var(--bg-surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.wave-card:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Estados de Oculto y Excluido */
+.wave-card.is-hidden {
+  opacity: 0.6;
+}
+
+.wave-card.is-excluded {
+  border-style: dashed;
+  border-color: var(--border-subtle);
+}
+
+.wave-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wave-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.wave-title {
+  font-family: 'JetBrains Mono', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.wave-prop-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+
+.prop-right {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.prop-left {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.prop-static {
+  background-color: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.wave-toggles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-icon-hint {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* Fila de Entrada de Ecuación */
+.wave-equation-row {
+  width: 100%;
+}
+
+.input-with-icon {
+  display: flex;
+  align-items: center;
+  background-color: #0b111e;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  transition: border-color var(--transition-fast);
+}
+
+.input-with-icon:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.math-prefix {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  margin-right: 8px;
+  user-select: none;
+}
+
+.wave-equation-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  outline: none;
+}
+
+.btn-keyboard-trigger {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: all var(--transition-fast);
+}
+
+.btn-keyboard-trigger:hover {
+  color: var(--accent-primary);
+  background-color: rgba(99, 102, 241, 0.12);
+}
+
+/* Vista previa KaTeX y estado de error */
+.wave-katex-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  padding: 2px 4px;
+}
+
+.wave-katex-preview {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  overflow-x: auto;
+}
+
+.wave-error-badge {
+  font-size: 0.68rem;
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Parámetros Físicos */
+.wave-params-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background-color: #0b111e;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.param-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.param-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.param-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.slider-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.style-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wave-color-picker {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.wave-color-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.wave-color-picker::-webkit-color-swatch {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.wave-dash-select, .wave-width-select, .form-select {
+  background-color: var(--bg-surface-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 0.74rem;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   MÓDULO DIDÁCTICO
+   ========================================================================== */
+#didactic-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.didactic-panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.didactic-badge-category {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent-info);
+  letter-spacing: 0.05em;
+}
+
+.didactic-title {
+  font-size: 1.05rem;
+  color: var(--text-main);
+}
+
+.preset-selector-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.preset-selector-row label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.preset-selector-row select {
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  background-color: var(--bg-surface-card);
+  border: 1px solid var(--border-default);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+}
+
+.didactic-card {
+  background-color: var(--bg-surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.didactic-card-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.didactic-desc {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.didactic-explanation {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent-primary);
+}
+
+.questions-card {
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.question-item {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.question-text {
+  font-size: 0.8rem;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.hint-details summary {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent-warning);
+  cursor: pointer;
+  user-select: none;
+}
+
+.hint-content {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  padding: 6px 8px;
+  margin-top: 4px;
+  background-color: rgba(245, 158, 11, 0.08);
+  border-radius: 4px;
+  border-left: 2px solid var(--accent-warning);
+}
+
+/* ==========================================================================
+   BARRA INFERIOR DE TIEMPO Y REPRODUCCIÓN
+   ========================================================================== */
+.playback-controls-bar {
+  height: 60px;
+  min-height: 60px;
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  gap: 16px;
+  z-index: 15;
+}
+
+.playback-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-playback.btn-play {
+  padding: 8px 16px;
+  font-size: 0.88rem;
+  background: linear-gradient(135deg, var(--accent-primary), #4338ca);
+  color: #ffffff;
+  box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+.timeline-group {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 600px;
+}
+
+.time-readout {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+  background-color: var(--bg-surface-elevated);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  min-width: 100px;
+  text-align: center;
+}
+
+.time-slider {
+  flex: 1;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+  height: 6px;
+}
+
+.playback-aux-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.select-compact {
+  padding: 4px 8px;
+  font-size: 0.78rem;
+}
